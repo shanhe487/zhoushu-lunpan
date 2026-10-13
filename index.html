@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>咒术轮盘 · 朱印轮盘（离线版）</title>
+<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="phone.css?v=2">
+<link rel="stylesheet" href="finale.css?v=2">
+<style>
+/* 概率控制面板 - 弹窗模式 */
+#prob-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.55) !important;
+  z-index: 2147482999 !important;
+  display: none !important;
+  backdrop-filter: blur(3px) !important;
+}
+#prob-overlay.show { display: block !important; }
+
+#prob-panel {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 2147483000 !important;
+  width: 360px !important;
+  max-width: 92vw !important;
+  max-height: 82vh !important;
+  background: rgba(18, 16, 28, 0.98) !important;
+  border: 1px solid rgba(160, 120, 255, 0.4) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 32px rgba(120, 80, 200, 0.25) !important;
+  color: #ece6f8 !important;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  font-size: 13px !important;
+  overflow: hidden !important;
+  display: none !important;
+  animation: probPop 0.2s ease-out !important;
+}
+#prob-panel.show { display: block !important; }
+@keyframes probPop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+#prob-panel .panel-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 16px !important;
+  background: linear-gradient(135deg, rgba(90, 50, 180, 0.5), rgba(50, 30, 110, 0.4)) !important;
+  border-bottom: 1px solid rgba(160, 120, 255, 0.25) !important;
+  user-select: none !important;
+}
+#prob-panel .panel-header b {
+  font-size: 14px !important;
+  color: #d8ccff !important;
+  letter-spacing: 1px !important;
+  font-weight: 600 !important;
+}
+#prob-panel .panel-header .toggle-icon {
+  font-size: 15px !important;
+  color: #b8a8e0 !important;
+  cursor: pointer !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  transition: background 0.15s !important;
+}
+#prob-panel .panel-header .toggle-icon:hover {
+  background: rgba(255,255,255,0.1) !important;
+}
+#prob-panel .panel-body {
+  padding: 14px 16px !important;
+  overflow-y: auto !important;
+  max-height: calc(82vh - 50px) !important;
+}
+#prob-panel .wheel-name {
+  font-size: 12px !important;
+  color: #a898d0 !important;
+  margin-bottom: 10px !important;
+  word-break: break-all !important;
+  line-height: 1.4 !important;
+}
+#prob-panel .prob-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+  padding: 8px 10px !important;
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 7px !important;
+  border-left: 3px solid transparent !important;
+}
+#prob-panel .prob-row.modified {
+  background: rgba(255, 200, 80, 0.08) !important;
+  border-left-color: #e8b840 !important;
+}
+#prob-panel .prob-row .row-num {
+  color: #7a6ea0 !important;
+  font-size: 11px !important;
+  min-width: 20px !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#prob-panel .prob-label {
+  flex: 1 !important;
+  min-width: 60px !important;
+  font-size: 12.5px !important;
+  color: #e0d8f0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+#prob-panel .prob-input {
+  width: 58px !important;
+  padding: 5px 6px !important;
+  background: rgba(0,0,0,0.4) !important;
+  border: 1px solid rgba(160, 120, 255, 0.35) !important;
+  border-radius: 5px !important;
+  color: #fff !important;
+  font-size: 12.5px !important;
+  text-align: center !important;
+  outline: none !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#prob-panel .prob-input:focus {
+  border-color: #a880ff !important;
+  box-shadow: 0 0 8px rgba(168, 128, 255, 0.5) !important;
+}
+#prob-panel .prob-pct {
+  width: 50px !important;
+  text-align: right !important;
+  font-size: 11.5px !important;
+  color: #8fd8a0 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#prob-panel .prob-bar-wrap {
+  flex-basis: 100% !important;
+  height: 3px !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 2px !important;
+  margin-top: 3px !important;
+  overflow: hidden !important;
+}
+#prob-panel .prob-bar {
+  height: 100% !important;
+  background: linear-gradient(90deg, #7c5ce0, #b894ff) !important;
+  border-radius: 2px !important;
+  transition: width 0.2s !important;
+}
+#prob-panel .panel-actions {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+}
+#prob-panel .panel-actions button {
+  flex: 1 !important;
+  padding: 9px 0 !important;
+  border: 1px solid rgba(160, 120, 255, 0.4) !important;
+  border-radius: 7px !important;
+  background: rgba(90, 50, 180, 0.3) !important;
+  color: #d8ccff !important;
+  font-size: 12.5px !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+  font-family: inherit !important;
+}
+#prob-panel .panel-actions button:hover {
+  background: rgba(110, 70, 200, 0.45) !important;
+  border-color: #a880ff !important;
+}
+#prob-panel .panel-actions button.reset-btn {
+  background: rgba(180, 50, 50, 0.2) !important;
+  border-color: rgba(220, 90, 90, 0.4) !important;
+  color: #f0b0b0 !important;
+}
+#prob-panel .panel-actions button.reset-btn:hover {
+  background: rgba(200, 60, 60, 0.35) !important;
+}
+#prob-panel .panel-tip {
+  margin-top: 12px !important;
+  font-size: 11px !important;
+  color: #7a7090 !important;
+  line-height: 1.6 !important;
+}
+
+/* 浮动按钮 */
+#prob-fab {
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 24px !important;
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(160, 120, 255, 0.5) !important;
+  background: linear-gradient(135deg, rgba(90, 50, 180, 0.85), rgba(50, 30, 110, 0.85)) !important;
+  color: #fff !important;
+  font-size: 22px !important;
+  cursor: pointer !important;
+  z-index: 2147482998 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 16px rgba(120, 80, 200, 0.3) !important;
+  transition: transform 0.15s, box-shadow 0.15s !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+}
+#prob-fab:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 24px rgba(120, 80, 200, 0.45) !important;
+}
+#prob-fab:active { transform: scale(0.95) !important; }
+
+/* 清理存档按钮 - 左上角 */
+#clear-fab {
+  position: fixed !important;
+  left: 16px !important;
+  top: 16px !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(255, 120, 120, 0.4) !important;
+  background: rgba(60, 20, 20, 0.85) !important;
+  color: #fff !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  z-index: 2147482997 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+  transition: transform 0.15s, background 0.15s !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+}
+#clear-fab:hover {
+  background: rgba(120, 30, 30, 0.9) !important;
+  transform: scale(1.08) !important;
+}
+#clear-fab:active { transform: scale(0.95) !important; }
+
+/* 移动端适配 */
+@media (max-width: 480px) {
+  #prob-panel {
+    width: 92vw !important;
+    max-height: 78vh !important;
+  }
+  #prob-panel .panel-body {
+    max-height: calc(78vh - 50px) !important;
+    padding: 12px 14px !important;
+  }
+  #prob-fab {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 20px !important;
+    right: 14px !important;
+    bottom: 20px !important;
+  }
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="mobile-brand"><span>咒</span><b>咒术轮盘<small>朱印轮盘 · 离线版</small></b></div>
+<header><a class="brand" href="./index.html"><span class="brand-seal">咒</span><div>咒术轮盘<small>JUJUTSU · WHEEL CHRONICLES</small></div></a><nav aria-label="主导航"><button class="nav active" data-tab="life">命运轮盘</button><button class="nav" data-tab="paths">全部路径 <em>339</em></button><button class="nav" data-tab="fx">术式试演</button></nav><button id="settings" class="quiet">设置 / 存档</button></header>
+<div id="notice" role="status" aria-live="polite"></div>
+<main id="life-view">
+<aside class="left"><div class="eyebrow">命簿 · 当前篇</div><h2 id="name">未定之人</h2><div id="run-mode" class="status"><i></i>正式人生 · 真实随机</div><div class="divider"></div><div class="section-label">人物档案 <span id="draw-count">零抽</span></div><dl id="profile"></dl><canvas id="radar" width="500" height="350" aria-label="已获得的基础能力雷达"></canvas><div id="stats-summary"></div><button id="stats-open" class="text-button">查看全部状态 ↗</button><div class="left-foot"><span>录下命运，写成故事。</span><small id="source-count">339 个子盘 / 1,615 个选项</small></div></aside>
+<section class="arena" aria-label="轮盘操作区"><div class="arena-heading"><span id="category">基础</span><span id="step-label">序章 · 从此刻开始</span></div><h1 id="wheel-title">穿越后的初始身份</h1><p id="wheel-desc">决定角色进入咒术世界时的基本身份。</p><div id="stage"><div id="v10-stage"></div><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><canvas id="wheel" width="1200" height="1200" aria-label="身份轮盘"></canvas><div id="hub"><strong>命运</strong><small>六种可能</small></div><div class="pointer"></div><div id="plaque"><span id="candidate">命运尚未落定</span><b id="seal" hidden>命</b></div><canvas id="fx" width="1200" height="1200" aria-hidden="true"></canvas><div id="chant" aria-hidden="true"></div></div><div id="battle-hud" hidden><div class="battle-top"><b id="battle-round"></b><button id="battle-rules" class="quiet">数值 / 概率</button><button id="battle-log" class="quiet">交锋记录</button></div><div id="battle-fighters"></div><p id="battle-detail"></p></div><div class="controls"><button id="spin" class="primary" disabled>正在载入原盘…</button><button id="next" class="secondary" hidden>继续下一盘 <span>→</span></button><button id="back-life" class="secondary" hidden>返回人生</button><button id="restart-life" class="quiet" aria-label="重新开始人生">重新开始</button><button id="cinema-settings" class="quiet">配置</button></div><div id="under-controls">按空格起转 · 结果自动保存</div></section>
+<aside class="right"><div class="section-label" id="right-label">此盘候选 <span id="option-count">6 项</span></div><div id="result" hidden aria-live="polite"><div class="result-kicker">此签已落</div><div id="result-art"></div><h2 id="result-title"></h2><p id="result-note"></p><div id="result-changes"></div><div class="result-route">下一步 <b id="result-next"></b></div></div><div id="options"></div><details id="probability-note"><summary>查看抽取规则</summary><p>扇区面积和抽取概率均使用原盘实时权重，具体概率见各项。结果先保存，再播放停盘动画。刷新不会重抽。</p></details></aside>
+</main>
+<section id="history-bar"><div class="history-label">命运足迹<small id="history-count">尚未落签</small></div><div id="history"><p>第一枚签，会把你带去哪里？</p></div><button id="export-inline" class="text-button">导出命簿 ↗</button></section>
+<section id="paths-view" class="page-view" hidden><button class="quiet return-wheel">返回轮盘</button><div class="page-heading"><div><div class="eyebrow">原盘 · 完整分支</div><h1>每条路，都有另一种人生。</h1></div><div class="search-group"><label for="search">查找轮盘</label><input id="search" placeholder="搜索：里梅、十影、平安时代…"><select id="category-filter" aria-label="分支分类"><option value="">全部分类</option></select></div></div><div class="paths-layout"><div id="path-list"></div><article id="path-detail"><h2>选择一个轮盘</h2><p>查看选项、条件与它所通向的分支。</p></article></div></section>
+<section id="fx-view" class="page-view" hidden><button class="quiet return-wheel">返回轮盘</button><div class="page-heading"><div><div class="eyebrow">朱印 · 招式显化</div><h1>让招式，从轮盘上打出来。</h1><p>独立试演，不计入正式人生。原盘没有的招式不会加入正式抽取。</p></div></div><div id="fx-grid"></div></section>
+<footer><span>咒术轮盘 / 本地创作版（离线）</span><button id="about" class="text-button">原盘来源与素材情况 ↗</button><span id="save-status">本机存档</span></footer></div>
+<div id="voice-status" aria-live="polite"></div><div id="v10-fx"></div>
+<dialog id="dialog"><div class="dialog-top"><h2 id="dialog-title"></h2><button id="close-dialog" class="quiet" aria-label="关闭">关闭 ×</button></div><div id="dialog-content"></div></dialog>
+
+<!-- 概率控制面板 -->
+<div id="prob-overlay"></div>
+<div id="prob-panel">
+  <div class="panel-header">
+    <b>🎯 概率控制台</b>
+    <span class="toggle-icon" id="prob-panel-close">✕</span>
+  </div>
+  <div class="panel-body">
+    <div class="wheel-name" id="prob-wheel-name">等待轮盘加载…</div>
+    <div id="prob-list"></div>
+    <div class="panel-actions">
+      <button id="prob-apply">应用权重</button>
+      <button id="prob-reset" class="reset-btn">恢复默认</button>
+    </div>
+    <div class="panel-tip">修改权重后点击「应用权重」即时生效。权重越大概率越高，无需归一化。设置会自动保存到本地。</div>
+  </div>
+</div>
+<button id="prob-fab" title="修改转盘概率">🎯</button>
+<button id="clear-fab" title="清理所有存档">🗑️</button>
+
+<script type="module" src="./app.js?v=2"></script>
+<script src="./probability-editor.js?v=2"></script>
+</body>
+</html>
